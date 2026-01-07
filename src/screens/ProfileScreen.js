@@ -1,10 +1,10 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import { useContext } from "react";
 
 import { APP_NAME } from "../utils/constants";
 import { useCart } from "../hooks/useCart";
-import { useContext } from "react";
 import { OrdersContext } from "../context/orders/orders.context";
 
 export default function ProfileScreen() {
@@ -32,43 +32,65 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
       {/* HEADER */}
-      <View className="px-4 py-3 bg-white border-b border-gray-200">
+      <View className="px-4 py-4 bg-white border-b border-gray-200">
         <Text className="text-xl font-bold">Profile</Text>
       </View>
 
-      {/* USER CARD */}
-      <View className="bg-white m-4 p-4 rounded-2xl shadow-sm">
-        <Text className="text-lg font-semibold mb-1">
-          Guest User
-        </Text>
-        <Text className="text-gray-500">
-          guest@localmart.app
-        </Text>
+      {/* PROFILE CARD */}
+      <View className="bg-white m-4 p-5 rounded-3xl shadow-sm flex-row items-center">
+        {/* Avatar */}
+        <View className="w-16 h-16 rounded-full bg-black items-center justify-center">
+          <Text className="text-white text-2xl font-bold">
+            G
+          </Text>
+        </View>
+
+        {/* User Info */}
+        <View className="ml-4">
+          <Text className="text-lg font-semibold">
+            Guest User
+          </Text>
+          <Text className="text-gray-500">
+            guest@localmart.app
+          </Text>
+        </View>
       </View>
 
-      {/* ACTIONS */}
-      <View className="bg-white mx-4 rounded-2xl shadow-sm">
-        <TouchableOpacity
-          onPress={handleClearCart}
-          className="px-4 py-4 border-b border-gray-200"
-        >
-          <Text className="text-red-600 font-semibold">
-            Clear Cart
-          </Text>
-        </TouchableOpacity>
+      {/* ACCOUNT SECTION */}
+      <View className="mx-4">
+        <Text className="text-gray-500 text-sm mb-2">
+          Account
+        </Text>
 
-        <TouchableOpacity
-          onPress={handleClearOrders}
-          className="px-4 py-4"
-        >
-          <Text className="text-red-600 font-semibold">
-            Clear Order History
-          </Text>
-        </TouchableOpacity>
+        <View className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <TouchableOpacity
+            onPress={handleClearCart}
+            className="px-5 py-4 flex-row justify-between items-center border-b border-gray-200"
+          >
+            <Text className="text-base">
+              Clear Cart
+            </Text>
+            <Text className="text-red-600 font-semibold">
+              Reset
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleClearOrders}
+            className="px-5 py-4 flex-row justify-between items-center"
+          >
+            <Text className="text-base">
+              Clear Order History
+            </Text>
+            <Text className="text-red-600 font-semibold">
+              Reset
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* APP INFO */}
-      {/* <View className="mt-auto p-4 items-center">
+      {/* <View className="mt-auto items-center py-6">
         <Text className="text-gray-400 text-sm">
           {APP_NAME} © {new Date().getFullYear()}
         </Text>

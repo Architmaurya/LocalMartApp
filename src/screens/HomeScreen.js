@@ -5,6 +5,7 @@ import {
   FlatList,
   TextInput,
   TouchableOpacity,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -15,16 +16,34 @@ import ProductListSkeleton from "../components/ProductListSkeleton";
 import { ITEMS_PER_PAGE } from "../utils/constants";
 
 export default function HomeScreen({ navigation }) {
-  const { products, loading } = useProducts();
+  const { products, loading, refetch } = useProducts();
 
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [page, setPage] = useState(1);
+  const [minLoadingDone, setMinLoadingDone] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // ⏱ Force skeleton for 1s on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMinLoadingDone(true);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // reset pagination when filters change
   useEffect(() => {
     setPage(1);
   }, [search, selectedCategory]);
+
+  // pull to refresh handler
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
   // categories
   const categories = useMemo(() => {
@@ -55,15 +74,12 @@ export default function HomeScreen({ navigation }) {
   const hasMore =
     paginatedProducts.length < filteredProducts.length;
 
-  // ✅ MEMOIZED RENDERERS (CRITICAL)
   const renderProduct = useCallback(
     ({ item }) => (
       <ProductCard
         product={item}
         onPress={() =>
-          navigation.navigate("ProductDetails", {
-            product: item,
-          })
+          navigation.navigate("ProductDetails", { product: item })
         }
       />
     ),
@@ -94,11 +110,36 @@ export default function HomeScreen({ navigation }) {
     [selectedCategory]
   );
 
-  // ✅ GLOBAL SKELETON
-  if (loading) {
+  /* 🦴 Skeleton */
+  if (!minLoadingDone) {
     return (
       <SafeAreaView className="flex-1 bg-gray-100">
         <ProductListSkeleton />
+      </SafeAreaView>
+    );
+  }
+
+  /* 🚫 No Internet (with Retry Button) */
+  if (!loading && products.length === 0) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-gray-100 px-6">
+        <Text className="text-lg font-semibold">
+          No Internet Connection
+        </Text>
+
+        <Text className="text-gray-500 mt-2 text-center">
+          Please check your network and try again
+        </Text>
+
+        {/* ✅ RETRY BUTTON */}
+        <TouchableOpacity
+          onPress={onRefresh}
+          className="mt-6 bg-black px-8 py-3 rounded-xl"
+        >
+          <Text className="text-white font-semibold text-base">
+            Retry
+          </Text>
+        </TouchableOpacity>
       </SafeAreaView>
     );
   }
@@ -131,14 +172,11 @@ export default function HomeScreen({ navigation }) {
           data={categories}
           keyExtractor={(c) => c}
           renderItem={renderCategory}
-          initialNumToRender={5}
-          maxToRenderPerBatch={5}
-          windowSize={3}
         />
       </View>
 
-      {/* PRODUCTS GRID */}
-      {paginatedProducts.length === 0 ? (
+      {/* PRODUCTS GRID + PULL TO REFRESH */}
+      {filteredProducts.length === 0 ? (
         <EmptyState message="No products found" />
       ) : (
         <FlatList
@@ -146,35 +184,19 @@ export default function HomeScreen({ navigation }) {
           data={paginatedProducts}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderProduct}
-
           numColumns={2}
-          columnWrapperStyle={{
-            justifyContent: "space-between",
-          }}
-
-          contentContainerStyle={{
-            padding: 12,
-          }}
-
-          // 🔥 PERFORMANCE FIXES (UNCHANGED)
-          initialNumToRender={6}
-          maxToRenderPerBatch={6}
-          windowSize={5}
-          removeClippedSubviews
-          updateCellsBatchingPeriod={50}
-
+          columnWrapperStyle={{ justifyContent: "space-between" }}
+          contentContainerStyle={{ padding: 12 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
+          }
           onEndReached={() => {
             if (hasMore) setPage((p) => p + 1);
           }}
           onEndReachedThreshold={0.5}
-
-          ListFooterComponent={
-            hasMore ? (
-              <Text className="text-center text-gray-500 py-4">
-                Loading more...
-              </Text>
-            ) : null
-          }
         />
       )}
     </SafeAreaView>
