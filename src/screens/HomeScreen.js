@@ -137,17 +137,26 @@ export default function HomeScreen({ navigation }) {
         />
       </View>
 
-      {/* PRODUCTS */}
+      {/* PRODUCTS GRID */}
       {paginatedProducts.length === 0 ? (
         <EmptyState message="No products found" />
       ) : (
         <FlatList
-          contentContainerStyle={{ padding: 16 }}
+          key="grid"
           data={paginatedProducts}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderProduct}
 
-          // 🔥 PERFORMANCE FIXES
+          numColumns={2}
+          columnWrapperStyle={{
+            justifyContent: "space-between",
+          }}
+
+          contentContainerStyle={{
+            padding: 12,
+          }}
+
+          // 🔥 PERFORMANCE FIXES (UNCHANGED)
           initialNumToRender={6}
           maxToRenderPerBatch={6}
           windowSize={5}

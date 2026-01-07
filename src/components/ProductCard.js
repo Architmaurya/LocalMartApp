@@ -14,49 +14,56 @@ function ProductCard({
     <TouchableOpacity
       disabled={variant === "full"}
       onPress={onPress}
-      className={`bg-white p-4 rounded-lg border border-gray-200 ${
-        variant === "compact" ? "mb-3" : ""
-      }`}
+      className="bg-white rounded-xl border border-gray-200 m-2 flex-1 overflow-hidden"
+      activeOpacity={0.85}
     >
-      {/* Image */}
-      <Image
-        source={{ uri: product.image }}
-        className={variant === "compact" ? "w-20 h-20" : "w-full h-64"}
-        resizeMode="contain"
-      />
+      {/* IMAGE */}
+      <View className="bg-gray-100 items-center justify-center h-44">
+        <Image
+          source={{ uri: product.image }}
+          className="w-full h-full"
+          resizeMode="contain"
+        />
+      </View>
 
-      {/* Title */}
-      <Text className="font-semibold text-base mt-2" numberOfLines={2}>
-        {product.title}
-      </Text>
+      {/* CONTENT */}
+      <View className="p-3">
+        {/* TITLE */}
+        <Text
+          className="font-semibold text-sm text-gray-900"
+          numberOfLines={2}
+        >
+          {product.title}
+        </Text>
 
-      {/* Category */}
-      <Text className="text-gray-500 text-xs mt-1">
-        {product.category}
-      </Text>
+        {/* CATEGORY */}
+        <Text className="text-gray-500 text-xs mt-1">
+          {product.category}
+        </Text>
 
-      {/* Price */}
-      <Text className="font-bold text-lg mt-1">
-        ₹ {product.price}
-      </Text>
+        {/* PRICE + RATING */}
+        <View className="flex-row items-center justify-between mt-2">
+          <Text className="font-bold text-base text-black">
+            ₹ {product.price}
+          </Text>
+
+          {product.rating && (
+            <View className="flex-row items-center bg-green-600 px-2 py-0.5 rounded">
+              <Text className="text-white text-xs font-semibold">
+                ⭐ {product.rating.rate}
+              </Text>
+            </View>
+          )}
+        </View>
+      </View>
 
       {/* ===== FULL DETAILS ONLY ===== */}
       {variant === "full" && (
-        <>
+        <View className="p-4 border-t border-gray-200">
           {/* Description */}
-          <Text className="text-gray-600 mt-3">
+          <Text className="text-gray-600 mt-1">
             {product.description}
           </Text>
-
-          {/* Rating */}
-          <View className="flex-row items-center mt-3">
-            <Text className="text-yellow-500 font-semibold">
-              ⭐ {product.rating?.rate}
-            </Text>
-            <Text className="text-gray-400 ml-2">
-              ({product.rating?.count})
-            </Text>
-          </View>
 
           {/* Quantity Selector */}
           <View className="flex-row items-center mt-4">
@@ -79,18 +86,17 @@ function ProductCard({
 
           {/* Add to Cart */}
           <TouchableOpacity
-            className="bg-black py-4 mt-6 rounded"
+            className="bg-black py-4 mt-6 rounded-xl"
             onPress={onAddToCart}
           >
             <Text className="text-white text-center font-semibold">
               Add to Cart
             </Text>
           </TouchableOpacity>
-        </>
+        </View>
       )}
     </TouchableOpacity>
   );
 }
 
-// 🔥 PREVENT UNNECESSARY RE-RENDERS (CRITICAL)
 export default React.memo(ProductCard);
