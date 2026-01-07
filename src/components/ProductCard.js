@@ -1,6 +1,7 @@
+import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 
-export default function ProductCard({
+function ProductCard({
   product,
   onPress,
   variant = "compact", // compact | full
@@ -90,3 +91,6 @@ export default function ProductCard({
     </TouchableOpacity>
   );
 }
+
+// 🔥 PREVENT UNNECESSARY RE-RENDERS (CRITICAL)
+export default React.memo(ProductCard);

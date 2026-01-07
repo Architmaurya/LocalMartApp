@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -41,8 +41,7 @@ export default function HomeScreen({ navigation }) {
 
       const matchCategory =
         selectedCategory === "All" ||
-        p.category.toLowerCase() ===
-          selectedCategory.toLowerCase();
+        p.category.toLowerCase() === selectedCategory.toLowerCase();
 
       return matchSearch && matchCategory;
     });
@@ -55,6 +54,45 @@ export default function HomeScreen({ navigation }) {
 
   const hasMore =
     paginatedProducts.length < filteredProducts.length;
+
+  // ✅ MEMOIZED RENDERERS (CRITICAL)
+  const renderProduct = useCallback(
+    ({ item }) => (
+      <ProductCard
+        product={item}
+        onPress={() =>
+          navigation.navigate("ProductDetails", {
+            product: item,
+          })
+        }
+      />
+    ),
+    [navigation]
+  );
+
+  const renderCategory = useCallback(
+    ({ item }) => (
+      <TouchableOpacity
+        onPress={() => setSelectedCategory(item)}
+        className={`px-4 py-2 mr-2 rounded-full border ${
+          selectedCategory === item
+            ? "bg-black border-black"
+            : "bg-white border-gray-300"
+        }`}
+      >
+        <Text
+          className={
+            selectedCategory === item
+              ? "text-white font-semibold"
+              : "text-gray-700"
+          }
+        >
+          {item}
+        </Text>
+      </TouchableOpacity>
+    ),
+    [selectedCategory]
+  );
 
   // ✅ GLOBAL SKELETON
   if (loading) {
@@ -92,26 +130,10 @@ export default function HomeScreen({ navigation }) {
           showsHorizontalScrollIndicator={false}
           data={categories}
           keyExtractor={(c) => c}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => setSelectedCategory(item)}
-              className={`px-4 py-2 mr-2 rounded-full border ${
-                selectedCategory === item
-                  ? "bg-black border-black"
-                  : "bg-white border-gray-300"
-              }`}
-            >
-              <Text
-                className={
-                  selectedCategory === item
-                    ? "text-white font-semibold"
-                    : "text-gray-700"
-                }
-              >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          )}
+          renderItem={renderCategory}
+          initialNumToRender={5}
+          maxToRenderPerBatch={5}
+          windowSize={3}
         />
       </View>
 
@@ -123,20 +145,20 @@ export default function HomeScreen({ navigation }) {
           contentContainerStyle={{ padding: 16 }}
           data={paginatedProducts}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <ProductCard
-              product={item}
-              onPress={() =>
-                navigation.navigate("ProductDetails", {
-                  product: item,
-                })
-              }
-            />
-          )}
+          renderItem={renderProduct}
+
+          // 🔥 PERFORMANCE FIXES
+          initialNumToRender={6}
+          maxToRenderPerBatch={6}
+          windowSize={5}
+          removeClippedSubviews
+          updateCellsBatchingPeriod={50}
+
           onEndReached={() => {
             if (hasMore) setPage((p) => p + 1);
           }}
-          onEndReachedThreshold={0.4}
+          onEndReachedThreshold={0.5}
+
           ListFooterComponent={
             hasMore ? (
               <Text className="text-center text-gray-500 py-4">
